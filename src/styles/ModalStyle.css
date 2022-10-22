@@ -1,0 +1,24 @@
+@import url('../constants/colors.css');
+
+.title {
+    color: var(--dark-blue);
+}
+
+.form-wrapper .form {
+}
+
+.form-wrapper .form .link-wrapper {
+    margin: 15px 0px;
+}
+
+.form-wrapper .form .link-wrapper .link{
+    margin: 0;
+    padding: 0;
+    color: var(--light-blue);
+    font-size: 14px;
+}
+
+.form-wrapper .form .btn {
+    background: var(--dark-blue);
+    width: 100%;
+}
