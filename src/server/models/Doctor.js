@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const DoctorSchema = mongoose.Schema({
+    email: String,
+    password: String,
     registration: String,
     name: String,
     practices: [],
