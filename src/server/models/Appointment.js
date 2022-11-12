@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const AppointmentSchema = mongoose.Schema({
-    createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'Doctor'},
-    patientID: {type: mongoose.Schema.Types.ObjectId, ref: 'Patient'},
+    createdBy: String,
+    patientID: String,
     dateTime: Date,
     isAvalable: Boolean,
-})
+}, {collection: 'Appointment'});
 
 const AppointmentModel = mongoose.model("Appointment",AppointmentSchema);
 

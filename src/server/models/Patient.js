@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const PatientSchema = mongoose.Schema({
+    id: String,
     email: String,
     password: String,
     name: String,
@@ -8,7 +9,7 @@ const PatientSchema = mongoose.Schema({
     gender: String,
     address: String,
 
-})
+}, {collection: 'Patient'});
 
 const PatientModel = mongoose.model("Patient", PatientSchema);
 

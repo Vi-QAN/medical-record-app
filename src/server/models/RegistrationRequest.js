@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const RegistrationRequestSchema = mongoose.Schema({
-    to: {type: mongoose.Schema.Types.ObjectId, ref: 'Doctor'},
-    from: {type: mongoose.Schema.Types.ObjectId, ref: 'Patient'},
+    to: String,
+    from: String,
     accepted: Boolean,
-})
+}, {collection: 'RegistrationRequest'});
 
 const RegistrationRequestModel = mongoose.model("RegistrationRequest",RegistrationRequestSchema);
 

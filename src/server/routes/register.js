@@ -1,4 +1,4 @@
-const db = require("../db");
+const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const Roles = db.ROLES;
 const Doctor = db.doctor;
@@ -61,7 +61,7 @@ const register = (req,res) => {
     }
     else {
         const patient = new Patient({
-            email: String,
+            email: req.body.email,
             password: String,
             name: String,
             DOB: String,
