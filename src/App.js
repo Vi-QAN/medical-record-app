@@ -13,7 +13,7 @@ function App() {
     <div className="App">
       <Header setShowModal={setShowModal}/>
       <PopupModal setShowModal={setShowModal} showModal={showModal}/>
-      <Main />
+      {/* <Main /> */}
       <Doctor />
       <Footer />
     </div>
