@@ -8,8 +8,8 @@ const DoctorSchema = mongoose.Schema({
     name: String,
     practices: [String],
     
-}, {collection: 'Doctor'});
+});
 
-const DoctorModel = mongoose.model("Doctor", DoctorSchema);
+const DoctorModel = mongoose.model('doctors', DoctorSchema);
 
 module.exports = DoctorModel;

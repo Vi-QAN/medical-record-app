@@ -46,14 +46,14 @@ export default function DoctorScheduler() {
             <ViewState
                 currentDate={currentDate}
             />
-            <Toolbar />
-            <ViewSwitcher />
+            
             <DayView
                 startDayHour={9}
                 endDayHour={14}
             />
             <WeekView startDayHour={9} endDayHour={19} />
-            <MonthView />
+            <Toolbar />
+            <ViewSwitcher />
             <DateNavigator />
             <TodayButton />
             <Appointments appointmentComponent={Appointment} />

@@ -5,8 +5,8 @@ const AppointmentSchema = mongoose.Schema({
     patientID: String,
     dateTime: Date,
     isAvalable: Boolean,
-}, {collection: 'Appointment'});
+});
 
-const AppointmentModel = mongoose.model("Appointment",AppointmentSchema);
+const AppointmentModel = mongoose.model("appointments",AppointmentSchema);
 
 module.exports = AppointmentModel;

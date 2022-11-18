@@ -11,13 +11,13 @@ export default function Header({setShowModal}) {
                 expand="lg" 
                 className="header-wrapper">
                 <Container>
-                    <Navbar.Brand href="#home">Diagnose</Navbar.Brand>
+                    <Navbar.Brand href="/">Diagnose</Navbar.Brand>
                     <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                     <Navbar.Collapse id="responsive-navbar-nav">
                         <Nav className="link-wrapper me-auto">
-                            <Nav.Link className="link" href="#home">Home</Nav.Link>
-                            <Nav.Link className="link" href="#home">About</Nav.Link>
-                            <Nav.Link className="link" href="#home">Contact</Nav.Link>
+                            <Nav.Link className="link" href="/">Home</Nav.Link>
+                            <Nav.Link className="link" href="/about">About</Nav.Link>
+                            <Nav.Link className="link" href="/contact">Contact</Nav.Link>
                         </Nav>
                         <Nav>
                             <Button onClick={() => setShowModal(true)} className="btn">

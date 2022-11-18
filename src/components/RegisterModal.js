@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
-import { Button, Nav, Form } from 'react-bootstrap';
+import { Button, Nav, Form, Spinner } from 'react-bootstrap';
 import url from '../constants/link';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
 function DoctorForm({setModal}){
+    // response status
+    const [ isRegistered, setIsRegistered ] = useState(false);
+
+    // message from server
+    const [ message, setMessage] = useState();
+
+    // submission status
+    const [ submitting, setSubmitting] = useState(false);
+
+    // available practices list
     const practiceOptions = ['In house', 'In hosptial'];
+
+    // validation schema
     const registerSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email').required(),
         password: Yup.string().min(5, 'Too Short!').required(),
@@ -14,7 +26,9 @@ function DoctorForm({setModal}){
         practice: Yup.string().required(),
     })
 
+
     const onDoctorRegister = (values) => {
+        setSubmitting(true);
         fetch(url + "/register/doctor", {
             method: 'POST',
             headers: {
@@ -24,8 +38,17 @@ function DoctorForm({setModal}){
         })
         .then((res) => res.json())
         .then(result => {
-            console.log('Success: ',result);
+            // set response message
+            setMessage(result);
+
+            console.log(message);
+            
         })
+        .catch(err => console.log(err))
+        .finally(() => {
+            // submission status
+            setSubmitting(false)
+        });
     }
 
     return (
@@ -59,10 +82,15 @@ function DoctorForm({setModal}){
                         value={values.email}
                         onChange={handleChange}
                         isValid={touched.email && !errors.email}
-                        isInvalid={!!errors.email}
+                        isInvalid={!!errors.email || message?.errorEmail}
+                        disabled={submitting}
                     />
-                    <Form.Control.Feedback>Valid</Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+                    {/* trigger when there is an response */}
+                    {message?.errorEmail && <Form.Control.Feedback type="invalid">{message.message}</Form.Control.Feedback>}
+                    {!message && <Form.Control.Feedback>Valid</Form.Control.Feedback> }
+                    {!message && <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback> }
+                    
+                
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="validationFormik02">
@@ -75,6 +103,7 @@ function DoctorForm({setModal}){
                         onChange={handleChange}
                         isValid={touched.password && !errors.password}
                         isInvalid={!!errors.password}
+                        disabled={submitting}
                     />
                     <Form.Control.Feedback>Valid</Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
@@ -90,6 +119,7 @@ function DoctorForm({setModal}){
                         onChange={handleChange}
                         isValid={touched.fullName && !errors.fullName}
                         isInvalid={!!errors.fullName}
+                        disabled={submitting}
                     />
                     <Form.Control.Feedback>Valid</Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">{errors.fullName}</Form.Control.Feedback>
@@ -103,9 +133,12 @@ function DoctorForm({setModal}){
                         value={values.registration}
                         onChange={handleChange}
                         isValid={touched.registration && !errors.registration}
-                        isInvalid={!!errors.registration}/>
-                    <Form.Control.Feedback>Valid</Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">{errors.registration}</Form.Control.Feedback>
+                        isInvalid={!!errors.registration || message?.errorReg}
+                        disabled={submitting}
+                    />
+                    {message?.errorReg && <Form.Control.Feedback type="invalid">{message.message}</Form.Control.Feedback>}
+                    {!message && <Form.Control.Feedback>Valid</Form.Control.Feedback>}
+                    {!message && <Form.Control.Feedback type="invalid">{errors.registration}</Form.Control.Feedback>}
                 </Form.Group>
                 
                 <Form.Group className="mb-3" controlId="validationFormik05">
@@ -117,12 +150,14 @@ function DoctorForm({setModal}){
                         name='practice'
                         onChange={handleChange}
                         isValid={touched.practice && !errors.practice}
-                        isInvalid={!!errors.practice}>
+                        isInvalid={!!errors.practice}
+                        disabled={submitting}>
                         {practiceOptions.map((option) => {
                             return (
                                 <option>{option}</option>
                             )
                         })}
+
                     </Form.Select>
 
                 </Form.Group>
@@ -132,10 +167,11 @@ function DoctorForm({setModal}){
                     <Nav.Link className='link' onClick={() => setModal(true,'Login')}>Already have an account?</Nav.Link>
                 </Nav>
 
-                <Button className='btn' type="submit">
-                    Register
+                <Button disabled={submitting} className='btn' type="submit">
+                    {submitting && <Spinner as="span" animation='grow' size="sm" role="status" aria-hidden="true" /> }
+                    {submitting ? "Submitting" : "Register"}
                 </Button>
-            </Form>
+                </Form>
             )}
         </Formik>
     )
@@ -159,6 +195,7 @@ function PatientForm(){
 }
 
 export default function RegisterModal({setModal}){
+    
     const [userRole, setUserRole] = useState('');
     const ROLES = {
         DOCTOR: 'doctor',
@@ -170,6 +207,7 @@ export default function RegisterModal({setModal}){
 
     return (
         <React.Fragment>
+            
             <Nav className="mb-3" variant="tabs" defaultActiveKey="doctor" onSelect={(eventKey) => setUserRole(eventKey)}>
                 <Nav.Item>
                     <Nav.Link eventKey={ROLES.DOCTOR}>Doctor</Nav.Link>

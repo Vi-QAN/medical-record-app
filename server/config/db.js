@@ -16,7 +16,7 @@ db.appoinment = require("../models/Appointment");
 db.doctor = require("../models/Doctor");
 db.patient = require("../models/Patient");
 db.registrationRequest = require("../models/RegistrationRequest");
-// db.user = require("./models/User")
+db.user = require("../models/User");
 // db.role = require("./models/Role");
 
 db.ROLES = {

@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 
 export default function LoginModal({setModal}){
     const loginSchema = Yup.object().shape({
-        email: Yup.string().email('Invalid email').required('Required'),
+        id: Yup.string().required('Required'),
         password: Yup.string().required('Required')
     })
 
@@ -20,15 +20,15 @@ export default function LoginModal({setModal}){
         }).then((response) => response.json())
         .then((result) => {
           console.log('Success:', result);
-        }).catch(error => console.log())
+        }).catch(error => console.log(error))
     }
 
     return (
         <Formik
             validationSchema={loginSchema}
-            onSubmit={values => console.log("Submitted" + values.email + values.password)}
+            onSubmit={(values) => onLogin(values)}
             initialValues={{
-                email: '',
+                id: '',
                 password: ''
             }}>
             {({
@@ -42,17 +42,17 @@ export default function LoginModal({setModal}){
             }) => (
                 <Form noValidate onSubmit={handleSubmit} className='form'>
                     <Form.Group className="mb-3" controlId="validationFormik01">
-                        <Form.Label>Email</Form.Label>
+                        <Form.Label>ID</Form.Label>
                         <Form.Control 
-                            type="email" 
-                            name="email"
-                            value={values.email}
+                            type="text" 
+                            name="id"
+                            value={values.id}
                             onChange={handleChange}
-                            isValid={touched.email && !errors.email}
-                            isInvalid={!!errors.email}
-                            placeholder="Enter email" />
+                            isValid={touched.id && !errors.id}
+                            isInvalid={!!errors.id}
+                            placeholder="Enter id" />
                         <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-                        <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">{errors.id}</Form.Control.Feedback>
                     </Form.Group>
                     
                     <Form.Group className="mb-3" controlId="validationFormik02">

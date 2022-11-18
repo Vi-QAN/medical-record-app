@@ -9,8 +9,8 @@ const PatientSchema = mongoose.Schema({
     gender: String,
     address: String,
 
-}, {collection: 'Patient'});
+});
 
-const PatientModel = mongoose.model("Patient", PatientSchema);
+const PatientModel = mongoose.model("patients", PatientSchema);
 
 module.exports = PatientModel;
