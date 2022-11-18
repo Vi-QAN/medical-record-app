@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const User = db.user;
 const Doctor = db.doctor;
 const Patient = db.patient;
+const ROLES = require('../constant/ROLES');
 
 dotenv.config();
 
@@ -27,12 +28,16 @@ const verifyUser = (req, res, next) => {
                 throw err;
             } 
             if(!user) {
-                res.status(404).json({message: "Wrong ID entered"})
+                res.status(404).json({
+                    errorID: true,
+                    message: "Wrong ID entered"})
                 return;
             }
 
             if (user.password !== req.body.password){
-                res.status(404).json({message: "Wrong password entered"})
+                res.status(404).json({
+                    errorPass: true,
+                    message: "Wrong password entered"})
                 return;
             }
             next();
@@ -43,12 +48,16 @@ const verifyUser = (req, res, next) => {
             id: req.body.id
         }, function(err, user){
             if (err || !user) {
-                res.status(404).send({message: "Wrong ID entered"})
+                res.status(404).send({
+                    errorID: true,
+                    message: "Wrong ID entered"})
                 return;
             }
 
             if (user.password !== req.body.password){
-                res.status(404).send({message: "Wrong password entered"})
+                res.status(404).send({
+                    errorPass: true,
+                    message: "Wrong password entered"})
                 return;
             }
             next();
@@ -88,7 +97,9 @@ const saveUser = async (req,res) => {
     
     res.status(200).send({
         message: "Login successfully",
-        token: accessToken
+        token: accessToken,
+        id: req.body.id,
+        role: req.body.id[0] === 'D' ? ROLES.DOCTOR : ROLES.PATIENT,
     })
     return;
 }

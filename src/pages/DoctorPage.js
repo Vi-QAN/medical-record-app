@@ -1,6 +1,6 @@
 import React from 'react';
 import url from '../constants/link';
-
+import { useParams } from 'react-router-dom';
 import { Container, Card, Form, CloseButton, Button } from 'react-bootstrap';
 import DoctorScheduler from '../components/DoctorScheduler';
 import profileImg from '../assets/profile.jpg';
@@ -25,9 +25,7 @@ function PatientInfo(){
         }
     
     ]
-    React.useEffect(() => {
 
-    })
     return (
         <Container fluid>
             {infoList.map((info) => {
@@ -90,27 +88,21 @@ function PatientRequests(){
     )
 }
 
-export default function DoctorPage({id}) {
-    const [info, setInfo] = React.useState();
+export default function DoctorPage() {
+    // get id from url
+    const params = useParams();
+    const id = params.id;
 
+    // trigger visibility of other info
     const [visibleInfo, setVisibleInfo] = React.useState(false);
     const [visibleSchedule, setVisibleSchedule] = React.useState(false);
     const [visiblePatients, setVisiblePatients] = React.useState(false);
     const [visibleRequests, setVisibleRequests] = React.useState(false);
+
     
-    // React.useEffect(() => {
-    //     fetch(url + '/doctor/' + id ,{
-    //         method: 'GET',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     })
-    //     .then(res => res.json())
-    //     .then(setInfo)
-    //     .catch(err => {
-            
-    //     }) 
-    // },[])
+    React.useEffect(() => {
+        console.log(id);
+    },[])
     return (
         <React.Fragment>
             <Container fluid className="d-flex flex-column align-items-center my-5 px-lg-5 px-sm-2" id="info" >

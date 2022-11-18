@@ -15,6 +15,7 @@ export default function Header({setShowModal}) {
                     <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                     <Navbar.Collapse id="responsive-navbar-nav">
                         <Nav className="link-wrapper me-auto">
+
                             <Nav.Link className="link" href="/">Home</Nav.Link>
                             <Nav.Link className="link" href="/about">About</Nav.Link>
                             <Nav.Link className="link" href="/contact">Contact</Nav.Link>

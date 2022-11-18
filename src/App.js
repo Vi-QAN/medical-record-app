@@ -21,7 +21,7 @@ function App() {
         
         <Routes>
           <Route path="/" element={<MainPage />} />
-          <Route path="doctor" element={<DoctorPage />} />
+          <Route path="/doctor/:id" element={<DoctorPage />} />
         </Routes>
         <Footer />
       </BrowserRouter>

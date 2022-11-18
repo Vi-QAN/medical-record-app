@@ -4,10 +4,7 @@ import url from '../constants/link';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
-function DoctorForm({setModal}){
-    // response status
-    const [ isRegistered, setIsRegistered ] = useState(false);
-
+function DoctorForm({setModal, setInfo}){
     // message from server
     const [ message, setMessage] = useState();
 
@@ -15,7 +12,14 @@ function DoctorForm({setModal}){
     const [ submitting, setSubmitting] = useState(false);
 
     // available practices list
-    const practiceOptions = ['In house', 'In hosptial'];
+    const practiceOptions = ['Please choose an option','In house', 'In hosptial'];
+
+    // 
+    React.useEffect(() => {
+        if (message?.id){
+            setInfo(message)
+        }
+    },[message])
 
     // validation schema
     const registerSchema = Yup.object().shape({
@@ -40,8 +44,9 @@ function DoctorForm({setModal}){
         .then(result => {
             // set response message
             setMessage(result);
-
             console.log(message);
+
+            
             
         })
         .catch(err => console.log(err))
@@ -194,7 +199,7 @@ function PatientForm(){
 
 }
 
-export default function RegisterModal({setModal}){
+export default function RegisterModal({setModal, setInfo}){
     
     const [userRole, setUserRole] = useState('');
     const ROLES = {
@@ -216,7 +221,7 @@ export default function RegisterModal({setModal}){
                     <Nav.Link eventKey={ROLES.PATIENT}>Patient</Nav.Link>
                 </Nav.Item>
             </Nav>
-            {userRole === ROLES.DOCTOR ? <DoctorForm setModal={setModal} /> : <PatientForm setModal={setModal}/> }
+            {userRole === ROLES.DOCTOR ? <DoctorForm setModal={setModal} setInfo={setInfo}/> : <PatientForm setModal={setModal}/> }
             
         </React.Fragment>
         

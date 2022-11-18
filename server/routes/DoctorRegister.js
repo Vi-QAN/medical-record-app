@@ -18,7 +18,7 @@ const validateRegistration = (req, res, next) => {
         }
         if (doctor) {   
             res.status(400).send({
-                errorReg: true,
+                error: true,
                 message: "Registration is already used"});
             return;
         }
@@ -64,7 +64,6 @@ const saveDoctor = async function (req,res) {
         }
         if (doc){
             res.status(200).send({
-                error: false,
                 id: doctorID,
                 message: "Registered successfully",
             });
