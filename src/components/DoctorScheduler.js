@@ -1,5 +1,7 @@
-import React from 'react';
-import { ViewState } from '@devexpress/dx-react-scheduler';
+import React, { useState } from 'react';
+import url from '../constants/link';
+import Paper from '@mui/material/Paper';
+import { EditingState, ViewState, IntegratedEditing } from '@devexpress/dx-react-scheduler';
 import {
   Scheduler,
   DayView,
@@ -8,55 +10,199 @@ import {
   DateNavigator,
   TodayButton,
   WeekView,
-  MonthView,
-  ViewSwitcher
+  ViewSwitcher,
+  AppointmentForm,
+  AppointmentTooltip,
+  Resources,
+  ConfirmationDialog
 } from '@devexpress/dx-react-scheduler-material-ui';
 import * as Colors from '../constants/colors';
 
-const currentDate = '2018-11-01';
-const schedulerData = [
-  { startDate: '2018-11-01T09:45', endDate: '2018-11-01T11:00', title: 'Meeting' },
-  { startDate: '2018-11-01T12:00', endDate: '2018-11-01T13:30', title: 'Go to a gym' },
-];
+// appointment states
+const STATES = {
+  AVAILABLE: 'Available',
+  BOOKED: 'Booked',
+}
 
+// map external data to component data
+const mapAppointmentData = appointment => ({
+  id: appointment.id,
+  startDate: appointment.startDate,
+  endDate: appointment.endDate,
+  title: appointment.title,
+  notes: appointment.notes,
+  state: appointment.state,
+  patientID: appointment.patientID
+})
 
 // custom appointment style
 const Appointment = ({
-    children, style, ...restProps
+    children, 
+    style, 
+    ...restProps
   }) => (
     <Appointments.Appointment
       {...restProps}
       style={{
         ...style,
-        backgroundColor: Colors.darkBlue,
         borderRadius: '8px',
       }}
     >
+    
       {children}
+      
     </Appointments.Appointment>
   );
 
-export default function DoctorScheduler() {
+// initial data
+const initialState = {
+  data: [],
+  loading: false,
+  currentDate: new Date().toLocaleDateString(),
+  currentViewName: 'Day',
+  resources: [
+    {
+      fieldName: 'state',
+      title: 'State',
+      instances: [
+        {id: STATES.AVAILABLE, text: STATES.AVAILABLE, color: Colors.lightGreen},
+        {id: STATES.BOOKED, text: STATES.BOOKED, color: Colors.lightBlue}
+      ]
+    },
 
-    return (
-    <React.Fragment>
-        <Scheduler
-            data={schedulerData}
-        >
-            <ViewState
-                currentDate={currentDate}
-            />
-            
-            <DayView
-                startDayHour={9}
-                endDayHour={14}
-            />
-            <WeekView startDayHour={9} endDayHour={19} />
-            <Toolbar />
-            <ViewSwitcher />
-            <DateNavigator />
-            <TodayButton />
-            <Appointments appointmentComponent={Appointment} />
-        </Scheduler>
-    </React.Fragment>)
+  ]
+}
+
+// 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'setLoading':
+      return { ...state, loading: action.payload };
+    case 'setData':
+      return { ...state, data: action.payload.map(mapAppointmentData) };
+    case 'setCurrentViewName':
+      return { ...state, currentViewName: action.payload };
+    case 'setCurrentDate':
+      return { ...state, currentDate: action.payload };
+    default:
+      return state;
+  }
+}
+
+export default function DoctorScheduler({id}) {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
+  
+  const {
+    data, loading, currentViewName, currentDate, resources
+  } = state;
+  const setCurrentViewName = React.useCallback(nextViewName => dispatch({
+    type: 'setCurrentViewName', payload: nextViewName,
+  }), [dispatch]);
+  const setData = React.useCallback(nextData => dispatch({
+    type: 'setData', payload: nextData,
+  }), [dispatch]);
+  const setCurrentDate = React.useCallback(nextDate => dispatch({
+    type: 'setCurrentDate', payload: nextDate,
+  }), [dispatch]);
+  const setLoading = React.useCallback(nextLoading => dispatch({
+    type: 'setLoading', payload: nextLoading,
+  }), [dispatch]);
+
+  // change item in data
+  const commitChanges = ({ added, changed, deleted }) => {
+    let data = state.data;
+    if (added) {
+      const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
+      data = [...data, Object.assign({},{id: startingAddedId}, added)];
+      console.log(added);
+    }
+    if (changed) {
+      data = data.map(appointment => (
+        changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
+      console.log(changed);  
+    }
+    if (deleted !== undefined) {
+      console.log(deleted);
+      data = data.filter(appointment => appointment.id !== deleted);
+    }
+    console.log(data);
+    setData(data);
+  };
+
+  // eslint-disable-next-line no-extend-native
+  Date.prototype.addHours = function(h) {
+    this.setHours(this.getHours() + h);
+    return this;
+  }
+
+  // example data
+  const exampleData = [{
+    id: 1,
+    createBy: 'DD18129855',
+    startDate: new Date().toISOString(),
+    endDate: new Date().addHours(2),
+    isAvailable: true,
+    patientID: 'PD18129855',
+  },
+  {
+    id: 2,
+    createBy: 'DD18129855',
+    startDate: new Date().toISOString(),
+    endDate: new Date().addHours(4).toISOString(),
+    isAvailable: false,
+    patientID: 'PD18129855',
+  }]
+  React.useEffect(() => {
+    // setData(exampleData);
+  // get appointment data
+  //   setLoading(true);
+  //   fetch(url + "/schedule" + id, {
+  //     method: 'GET',
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     }
+  //   }).then(res => res.json())
+  //   .then()
+  },[setData, currentViewName, currentDate])
+
+  return (
+  <React.Fragment>
+    <Paper>
+      <Scheduler
+          data={data}
+      >
+          <ViewState
+              currentDate={currentDate}
+              currentViewName={currentViewName}
+              onCurrentViewNameChange={setCurrentViewName}
+              onCurrentDateChange={setCurrentDate}
+          />
+
+          <EditingState
+            onCommitChanges={commitChanges}
+          />
+          <IntegratedEditing />
+          <DayView
+              startDayHour={9}
+              endDayHour={15}
+          />
+          <WeekView startDayHour={9} endDayHour={15} />
+          <Toolbar />
+          <DateNavigator />
+          <TodayButton />
+          <ViewSwitcher />
+          <ConfirmationDialog />
+          <Appointments appointmentComponent={Appointment} />
+          <AppointmentTooltip
+            showOpenButton
+            showCloseButton
+          />
+          <Resources
+              data={resources}
+              mainResourceName='state'
+          />
+          <AppointmentForm />
+      </Scheduler>
+    </Paper>
+  </React.Fragment>)
 }
