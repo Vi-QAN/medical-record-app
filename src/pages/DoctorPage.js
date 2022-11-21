@@ -1,9 +1,10 @@
 import React from 'react';
 import url from '../constants/link';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Container, Card, Form, CloseButton, Button } from 'react-bootstrap';
 import DoctorScheduler from '../components/DoctorScheduler';
 import profileImg from '../assets/profile.jpg';
+import Header from '../components/Header';
 import ToggleDisplay from '../components/ToggleDisplayBar';
 import * as Colors from '../constants/colors';
 
@@ -89,9 +90,11 @@ function PatientRequests(){
 }
 
 export default function DoctorPage() {
-    // get id from url
-    const params = useParams();
-    const id = params.id;
+    // set id 
+    const [ id, setID] = React.useState();
+
+    // navigation
+    const navigate = useNavigate();
 
     // trigger visibility of other info
     const [visibleInfo, setVisibleInfo] = React.useState(false);
@@ -101,10 +104,33 @@ export default function DoctorPage() {
 
     
     React.useEffect(() => {
-        console.log(id);
+        // verify token
+        fetch(url + "/auth", {
+            method: "POST",
+            headers: {
+                'Content-Type' : 'application/json'
+            },
+            body: JSON.stringify({
+                token: localStorage.getItem('token')
+            })
+        }).then(res => res.json())
+        .then(result => {
+            if (result.login){
+                setID(result.id);
+            }
+            else {
+                navigate('/')
+            }
+        }).catch(err => {
+            if (err) {
+                navigate('/');
+            }
+            
+        })
     },[])
     return (
         <React.Fragment>
+            <Header isDoctor={true} id={id} />
             <Container fluid className="d-flex flex-column align-items-center my-5 px-lg-5 px-sm-2" id="info" >
                 <ToggleDisplay title="Profile" setVisible={setVisibleInfo} state={visibleInfo}/>
                 {visibleInfo && 

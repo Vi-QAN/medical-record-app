@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Button } from 'react-bootstrap';
+import Header from '../components/Header';
+import PopupModal from '../components/Modal';
 
 
 export default function Main() {
+    const [showModal, setShowModal] = useState(false);
+
     const contentData = [
         {
             header: 'GP visit Cards',
@@ -18,26 +22,31 @@ export default function Main() {
         }
     ];
     return (
-        <Container fluid>
-            <Row className=''>
-                <Container 
-                    direction="d-flex flex-column" 
-                    style={{
-                        height: '30%',
-                        padding: '5% 10px 7% 10px'
-                    }} className='justify-content-space-between'>
-                    <h3 className='mb-3'>Welcome to Our Clinic</h3>
-                    <h5 className='mb-5'>Web Site Main Ingredients:</h5>
-                    <Button>Learn More</Button>
-                </Container>
-                <Container
-                    className='d-flex flex-lg-row flex-column ' >
-                    {contentData.map((item) => {
-                        return <ContentBox header={item.header} content={item.content}/>
-                    })}
-                </Container>
-            </Row>
-        </Container>
+        <React.Fragment>
+            <Header setShowModal={setShowModal} isMain={true}/>
+            <PopupModal setShowModal={setShowModal} showModal={showModal}/>
+            <Container fluid>
+                <Row className=''>
+                    <Container 
+                        direction="d-flex flex-column" 
+                        style={{
+                            height: '30%',
+                            padding: '5% 10px 7% 10px'
+                        }} className='justify-content-space-between'>
+                        <h3 className='mb-3'>Welcome to Our Clinic</h3>
+                        <h5 className='mb-5'>Web Site Main Ingredients:</h5>
+                        <Button>Learn More</Button>
+                    </Container>
+                    <Container
+                        className='d-flex flex-lg-row flex-column ' >
+                        {contentData.map((item) => {
+                            return <ContentBox header={item.header} content={item.content}/>
+                        })}
+                    </Container>
+                </Row>
+            </Container>
+        </React.Fragment>
+        
     )
 }
 

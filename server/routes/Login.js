@@ -12,9 +12,33 @@ const generateAccessToken = ({id}) => {
     return jwt.sign({id},process.env.TOKEN_SECRET,{expiresIn: "216000s"})
 }
 
-const verifyToken = (req,res,next) => {
-    jwt.verify()
+const verifyToken = (req,res) => {
+    // get token
+    const token = req.body.token;
 
+    // verify token
+    if (token) {
+        jwt.verify(token, process.env.TOKEN_SECRET, function(err,decoded) {
+            if (err){
+                res.status(401).json({
+                    login: false,
+                })
+            }
+            if (decoded){
+                res.status(200).json({
+                    login: true,
+                    id: decoded.id,
+                })
+            }
+
+        });
+    }
+    else {
+        // Return response with error
+        res.status(404).json({
+            login: false,
+        })
+    }
 }
 
 const verifyUser = (req, res, next) => {

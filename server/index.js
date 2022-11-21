@@ -1,4 +1,5 @@
 const DoctorRegister  = require('./routes/DoctorRegister');
+const Appointment = require('./routes/Appointment');
 const Login = require('./routes/Login');
 const express = require('express');
 const dotenv = require('dotenv');
@@ -31,8 +32,22 @@ app.get("/doctors", async (req, res) => {
 
 app.post('/register/doctor',[DoctorRegister.validateEmail, DoctorRegister.validateRegistration],DoctorRegister.saveDoctor)
 
-
+// login from modal
 app.post('/login',Login.verifyUser,Login.saveUser);
+
+// login using url
+app.post('/auth',Login.verifyToken)
+
+// appointment management
+// add appointment
+app.post('/doctor/:id/appointment/:appointmentID',Login.verifyUser,Appointment.addAppointment)
+
+// update appointment
+app.put('/doctor/:id/appointment/:appointmentID', Login.verifyUser, Appointment.updateAppointment);
+
+// delete appointment
+app.delete('/doctor/:id/appointment/:appointmentID',)
+
 // app.get('/', function(req, res) {
 //     res.send('hello');
 // });

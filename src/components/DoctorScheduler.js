@@ -38,8 +38,9 @@ const mapAppointmentData = appointment => ({
 // custom appointment style
 const Appointment = ({
     children, 
-    style, 
+    style,
     ...restProps
+    
   }) => (
     <Appointments.Appointment
       {...restProps}
@@ -48,11 +49,40 @@ const Appointment = ({
         borderRadius: '8px',
       }}
     >
+
+    {children}
     
-      {children}
+      
+      
       
     </Appointments.Appointment>
   );
+
+// custom appointment form
+const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) => {
+  const onCustomFieldChange = (nextValue) => {
+    onFieldChange({ patientID: nextValue });
+  };
+
+  return (
+    <AppointmentForm.BasicLayout
+      appointmentData={appointmentData}
+      onFieldChange={onFieldChange}
+      {...restProps}
+    >
+      <AppointmentForm.Label
+        text="Patient ID"
+        type="title"
+      />
+      <AppointmentForm.TextEditor
+        value={appointmentData.patientID}
+        onValueChange={onCustomFieldChange}
+        readOnly={appointmentData.state === STATES.BOOKED ? true : false}
+      />
+    </AppointmentForm.BasicLayout>
+  );
+};
+
 
 // initial data
 const initialState = {
@@ -192,7 +222,10 @@ export default function DoctorScheduler({id}) {
           <TodayButton />
           <ViewSwitcher />
           <ConfirmationDialog />
-          <Appointments appointmentComponent={Appointment} />
+          <Appointments 
+            appointmentComponent={Appointment}  
+            // appointmentContentComponent={AppointmentContent}
+            />
           <AppointmentTooltip
             showOpenButton
             showCloseButton
@@ -201,7 +234,8 @@ export default function DoctorScheduler({id}) {
               data={resources}
               mainResourceName='state'
           />
-          <AppointmentForm />
+          <AppointmentForm 
+            basicLayoutComponent={BasicLayout}/>
       </Scheduler>
     </Paper>
   </React.Fragment>)
