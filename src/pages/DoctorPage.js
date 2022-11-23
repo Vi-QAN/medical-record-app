@@ -131,7 +131,7 @@ export default function DoctorPage() {
     return (
         <React.Fragment>
             <Header isDoctor={true} id={id} />
-            <Container fluid className="d-flex flex-column align-items-center my-5 px-lg-5 px-sm-2" id="info" >
+            {/* <Container fluid className="d-flex flex-column align-items-center my-5 px-lg-5 px-sm-2" id="info" >
                 <ToggleDisplay title="Profile" setVisible={setVisibleInfo} state={visibleInfo}/>
                 {visibleInfo && 
                 <Card className="d-flex flex-row" style={{ width: '80%'}}>
@@ -146,10 +146,10 @@ export default function DoctorPage() {
                     </Card.Body>
                     <CloseButton className='d-none d-md-flex px-3 py-3' onClick={() => setVisibleInfo(false)} ></CloseButton>  
                 </Card>}
-            </Container>
+            </Container> */}
             <Container fluid className="d-flex flex-column align-items-center my-5 px-lg-5 px-sm-2" id="scheduler">
                 <ToggleDisplay title="Your Schedule" setVisible={setVisibleSchedule} state={visibleSchedule}/>
-                {visibleSchedule && <DoctorScheduler />}
+                {visibleSchedule && <DoctorScheduler id={id}/>}
             </Container>
             <Container fluid className="d-flex flex-column align-items-center my-5 px-sm-2 px-lg-5 " id="patientList">
                 <ToggleDisplay title="Patient List" setVisible={setVisiblePatients} state={visiblePatients} />

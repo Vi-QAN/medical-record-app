@@ -43,7 +43,6 @@ export default function Header({setShowModal, isMain, isDoctor, isPatient, id}) 
                                 </svg> Sign in</Button>}
                             {isDoctor && 
                                 <DropdownButton
-                                    id={``}
                                     title={id}
                                     style={{width: '100%'}}
                                 >

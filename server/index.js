@@ -38,15 +38,18 @@ app.post('/login',Login.verifyUser,Login.saveUser);
 // login using url
 app.post('/auth',Login.verifyToken)
 
-// appointment management
+// appointment management API
 // add appointment
-app.post('/doctor/:id/appointment/:appointmentID',Login.verifyUser,Appointment.addAppointment)
+app.post('/doctor/:id/appointments',Login.verifyToken,Appointment.addAppointment);
 
 // update appointment
-app.put('/doctor/:id/appointment/:appointmentID', Login.verifyUser, Appointment.updateAppointment);
+app.put('/doctor/:id/appointment/:appointmentID', Login.verifyToken, Appointment.updateAppointment);
 
 // delete appointment
-app.delete('/doctor/:id/appointment/:appointmentID',)
+app.delete('/doctor/:id/appointment/:appointmentID',Login.verifyToken, Appointment.deleteAppointment);
+
+// get appointment by id
+app.get('/doctor/:id/appointments', Appointment.getAppointmentsByDoctor);
 
 // app.get('/', function(req, res) {
 //     res.send('hello');

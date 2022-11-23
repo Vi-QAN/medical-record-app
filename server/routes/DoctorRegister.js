@@ -50,7 +50,7 @@ const validateEmail = (req, res, next) => {
 const saveDoctor = async function (req,res) {
     const doctorID = generateID({initial: 'D', registration: req.body.registration});
     const doctor = new Doctor({
-        id: doctorID,
+        _id: doctorID,
         email: req.body.email,
         password: req.body.password,
         registration: req.body.registration,

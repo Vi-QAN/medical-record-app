@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 // specify collection name for db
 const DoctorSchema = mongoose.Schema({
-    id: String,
+    _id: String,
     email: String,
     password: String,
     registration: String,

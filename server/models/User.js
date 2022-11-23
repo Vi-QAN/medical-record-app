@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const UserSchema = mongoose.Schema({
-    id: String,
+    _id: String,
     token: String
 })
 const UserModel = mongoose.model("users",UserSchema);

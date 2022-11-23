@@ -18,6 +18,16 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import * as Colors from '../constants/colors';
 
+// id generator
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
+const config = {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+}
+
 // appointment states
 const STATES = {
   AVAILABLE: 'Available',
@@ -26,13 +36,14 @@ const STATES = {
 
 // map external data to component data
 const mapAppointmentData = appointment => ({
-  id: appointment.id,
-  startDate: appointment.startDate,
-  endDate: appointment.endDate,
+  id: appointment._id,
+  startDate: new Date(appointment.startDate),
+  endDate: new Date(appointment.endDate),
   title: appointment.title,
   notes: appointment.notes,
   state: appointment.state,
-  patientID: appointment.patientID
+  patientID: appointment.patientID,
+  createdBy: appointment.createdBy,
 })
 
 // custom appointment style
@@ -51,10 +62,6 @@ const Appointment = ({
     >
 
     {children}
-    
-      
-      
-      
     </Appointments.Appointment>
   );
 
@@ -119,6 +126,58 @@ const reducer = (state, action) => {
   }
 }
 
+async function onAddAppointment({id, newItem}) {
+  // await axios.post(url + "/doctor/" + id + "/appointments",newItem,config)
+  //       .then(res => {console.log(res);})
+  //       .catch(err => console.log(err));
+  await fetch(url + "/doctor/" + id + "/appointments", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(Object.assign({}, {token: localStorage.getItem('token')},newItem))
+  }).then(res => res.json())
+  .then((result) => {
+    console.log(result);
+  }).catch(err => {
+    console.log(err);
+  })
+}
+
+async function onUpdateAppointment({id, appointmentID, changed}){
+  await axios.put(url + "/doctor/" + id + "/appointment/" + appointmentID,Object.assign({}, {token: localStorage.getItem('token')},changed[appointmentID]),config)
+        .then(res => {console.log(res);})
+        .catch(err => console.log(err));
+  // do update 
+  // await fetch(url + "/doctor/" + id + "/appointment/" + appointmentID, {
+  //   method: "PUT",
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body: JSON.stringify(Object.assign({}, {token: localStorage.getItem('token')},changed[appointmentID]))
+  // }).then(res => res.json())
+  // .then(result => console.log(result))
+  // .catch(err => console.log(err));
+}
+
+async function onDeleteAppointment({id, deleted}){
+  // await axios.delete(url + "/doctor/" + id + "/appointment/" + deleted,{token: localStorage.getItem('token')},config)
+  //       .then(res => {console.log(res);})
+  //       .catch(err => console.log(err));
+  // do a delete 
+  await fetch(url + "/doctor/" + id + "/appointment/" + deleted, {
+    method: "DELETE",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({token: localStorage.getItem('token')})
+  }).then(res => res.json())
+  .then(result => {
+    console.log(result);
+  })
+  .catch(err => console.log(err));
+}
+
 export default function DoctorScheduler({id}) {
   const [state, dispatch] = React.useReducer(reducer, initialState);
   
@@ -142,21 +201,39 @@ export default function DoctorScheduler({id}) {
   const commitChanges = ({ added, changed, deleted }) => {
     let data = state.data;
     if (added) {
-      const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-      data = [...data, Object.assign({},{id: startingAddedId}, added)];
-      console.log(added);
+      setLoading(true);
+      const newItem = Object.assign({},{_id: uuidv4()}, added);
+      data = [...data, newItem];
+      onAddAppointment({id: id, newItem: newItem});
+      setData(data);      
+      // set loading state
+      setLoading(false);
     }
     if (changed) {
-      data = data.map(appointment => (
-        changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
-      console.log(changed);  
+      setLoading(true);
+      let appointmentID = '';
+      data = data.map(appointment => {
+        if (changed[appointment.id]){
+          appointmentID = appointment.id;
+          return { ...appointment, ...changed[appointment.id] }
+        }
+        else {
+          return appointment;
+        }
+      })
+      console.log(appointmentID);
+      onUpdateAppointment({id: id, appointmentID: appointmentID, changed: changed});
+      setData(data);
+      setLoading(false);
     }
     if (deleted !== undefined) {
-      console.log(deleted);
+      setLoading(true);
       data = data.filter(appointment => appointment.id !== deleted);
+      onDeleteAppointment({id: id, deleted: deleted});
+      setData(data);
+      setLoading(false);
+
     }
-    console.log(data);
-    setData(data);
   };
 
   // eslint-disable-next-line no-extend-native
@@ -165,35 +242,22 @@ export default function DoctorScheduler({id}) {
     return this;
   }
 
-  // example data
-  const exampleData = [{
-    id: 1,
-    createBy: 'DD18129855',
-    startDate: new Date().toISOString(),
-    endDate: new Date().addHours(2),
-    isAvailable: true,
-    patientID: 'PD18129855',
-  },
-  {
-    id: 2,
-    createBy: 'DD18129855',
-    startDate: new Date().toISOString(),
-    endDate: new Date().addHours(4).toISOString(),
-    isAvailable: false,
-    patientID: 'PD18129855',
-  }]
   React.useEffect(() => {
-    // setData(exampleData);
-  // get appointment data
-  //   setLoading(true);
-  //   fetch(url + "/schedule" + id, {
-  //     method: 'GET',
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     }
-  //   }).then(res => res.json())
-  //   .then()
-  },[setData, currentViewName, currentDate])
+    // get appointment data
+    setLoading(true);
+    fetch(url + "/doctor/" + id + "/appointments", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(res => res.json())
+    .then(result => { 
+      setData(result.appointments)
+    })
+    .catch(err => console.log(err))
+    .finally(setLoading(false));
+    console.log("Effect");
+  },[currentViewName, currentDate])
 
   return (
   <React.Fragment>

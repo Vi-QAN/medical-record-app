@@ -12,7 +12,7 @@ const generateAccessToken = ({id}) => {
     return jwt.sign({id},process.env.TOKEN_SECRET,{expiresIn: "216000s"})
 }
 
-const verifyToken = (req,res) => {
+const verifyToken = async (req,res, next) => {
     // get token
     const token = req.body.token;
 
@@ -23,25 +23,27 @@ const verifyToken = (req,res) => {
                 res.status(401).json({
                     login: false,
                 })
+                return;
             }
             if (decoded){
                 res.status(200).json({
                     login: true,
                     id: decoded.id,
                 })
+                next();
             }
-
-        });
+        });   
     }
     else {
         // Return response with error
         res.status(404).json({
             login: false,
         })
+        return;
     }
 }
 
-const verifyUser = (req, res, next) => {
+const verifyUser = async (req, res, next) => {
     // get first character from id
     const initChar = req.body.id[0];
     if (initChar === 'D'){
@@ -95,8 +97,7 @@ const saveUser = async (req,res) => {
     const accessToken = generateAccessToken({id: req.body.id});
     User.findOne({id: req.body.id}, function(err, user) {
         if (err){
-            throw err
-            return;
+            throw err;
         }
         if (!user){
             // create new if not found in user table
