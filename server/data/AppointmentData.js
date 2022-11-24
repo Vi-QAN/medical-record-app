@@ -20,13 +20,13 @@ const populateAppointment = () => {
             for (let j = 0; j < 5;j++){
                 const index = Math.floor(Math.random() * titles.length);
                 const startDate = new Date().addDays(i).addHours(j);
-                const endDate = new Date().addDays(i).addHours(j + 2);
+                const endDate = new Date().addDays(i).addHours(j + 1);
                 const appointment = {
                     _id: uuid.v1(),
                     createdBy: "D" + z,
                     startDate: startDate,
                     endDate: endDate,
-                    state: (i % 2 === 0) ? 'Available' : 'Booked',
+                    state: (j % 2 === 0) ? 'Available' : 'Booked',
                     title: titles[index],
                 }
                 data.push(appointment);
