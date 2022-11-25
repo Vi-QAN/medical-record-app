@@ -13,7 +13,8 @@ const populateDoctor = () => {
             password: "12345" ,
             registration: i.toString(),
             name: names[index],
-            practice: (i % 2 === 0) ? "In house" : "Out door"
+            practice: (i % 2 === 0) ? "In house" : "Out door",
+            patientList: [`P${i + index}`,`P${i + index + 1}`]
         }
         data.push(doctor);
     }

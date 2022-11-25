@@ -5,7 +5,7 @@ const { populateRegistrationRequest } = require('./RegistrationRequestData');
 
 const AppointmentData = populateAppointment();
 const DoctorData = populateDoctor();
-const PatientData = populateDoctor();
+const PatientData = populatePatient();
 const RegistrationRequestData = populateRegistrationRequest();
 
 module.exports = {

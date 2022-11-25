@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 const RegistrationRequestSchema = mongoose.Schema({
+    _id: String,
     to: String,
     from: String,
+    date: Date,
     accepted: Boolean,
 });
 

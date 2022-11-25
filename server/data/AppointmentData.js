@@ -27,6 +27,7 @@ const populateAppointment = () => {
                     startDate: startDate,
                     endDate: endDate,
                     state: (j % 2 === 0) ? 'Available' : 'Booked',
+                    patientID: (j % 2 === 0) ? "" : "P" + z,
                     title: titles[index],
                 }
                 data.push(appointment);

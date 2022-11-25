@@ -1,8 +1,8 @@
 const db = require('../config/db');
-const Appoinment = db.appoinment;
+const Appointment = db.appoinment;
 
 const addAppointment = async (req,res) => {
-    new Appoinment({
+    new Appointment({
         _id: req.body._id,
         createdBy: req.params.id,
         patientID: req.body.patientID,
@@ -24,7 +24,7 @@ const addAppointment = async (req,res) => {
 }
 
 const updateAppointment = async (req,res) => {
-    Appoinment.updateOne({
+    Appointment.updateOne({
         _id: req.params.appointmentID,
         createdBy: req.params.id,
     },{ patientID: req.body.patientID,
@@ -35,7 +35,6 @@ const updateAppointment = async (req,res) => {
         title: req.body.title,}).exec((err, appointment) => {
         if (err){
             res.status(400);
-            
         }
         else {
             res.status(200);
@@ -45,7 +44,7 @@ const updateAppointment = async (req,res) => {
 }
 
 const deleteAppointment = async (req,res) => {
-    Appoinment.findOneAndDelete({
+    Appointment.findOneAndDelete({
         _id: req.params.appointmentID,
         createdBy: req.params.id
     }).exec(err => {
@@ -56,8 +55,39 @@ const deleteAppointment = async (req,res) => {
 }
 
 const getAppointmentsByDoctor = async (req,res) => {
-    Appoinment.find({
+    Appointment.find({
         createdBy: req.params.id,
+    }).exec((err, appointments) => {
+        if (err) {
+            res.status(500).json({message: err})
+            return;
+        }
+        if (appointments) {
+            res.status(200).json({appointments: appointments});
+            return;
+        }
+    })
+}
+
+const cancelAppointment = async (req,res) => {
+    Appointment.updateOne({
+        _id: req.params.id
+    },{ patientID: req.body.patientID,
+        state: req.body.state,
+    }).exec((err,doc) => {
+        if (err){
+            res.status(400);
+        }
+        else {
+            res.status(200);
+        }
+        return;
+    })
+}
+
+const getAppointmentsByPatient = async (req,res) => {
+    Appointment.find({
+        patientID: req.params.id
     }).exec((err, appointments) => {
         if (err) {
             res.status(500).json({message: err})
@@ -75,5 +105,7 @@ module.exports = {
     updateAppointment,
     deleteAppointment,
     getAppointmentsByDoctor,
+    getAppointmentsByPatient,
+    cancelAppointment,
 }
 

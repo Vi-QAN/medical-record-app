@@ -1,12 +1,14 @@
-
 const db = require("../config/db");
 const Doctor = db.doctor;
+const Request = db.registrationRequest;
 
+// generate id for doctor with prefix D
 const generateID = ({initial, registration}) => {
     return initial + registration;
 }
 
-const validateRegistration = (req, res, next) => {
+// check registration number is in database
+const validateRegistration = async (req, res, next) => {
     Doctor.findOne({registration: req.body.registration
     }).exec((err,doctor) => {
         if (err) {
@@ -27,7 +29,8 @@ const validateRegistration = (req, res, next) => {
 
 }
 
-const validateEmail = (req, res, next) => {
+// check if email is in database
+const validateEmail = async (req, res, next) => {
     res.header('Content-Type', 'application/json')
     Doctor.findOne({email: req.body.email
     }).exec((err, doctor) => {
@@ -47,6 +50,38 @@ const validateEmail = (req, res, next) => {
     });
 }
 
+// get patient list
+const getPatientList = async (req,res) => {
+    // get patient list from doctor database
+    Doctor.findOne({
+        _id: req.params.id,
+    }, {"patientList" : 1}).exec((err, doc) => {
+        if (err) {
+            throw err;
+        }
+
+        if (!doc){
+            res.status(404).json({
+                message: 'Patient list is empty'
+            })
+            return;
+        }
+        
+        res.status(200).json(doc);
+    })
+}
+
+const updatePatientList = async (req,res) => {
+    Doctor.updateOne({
+        _id: req.params.id,
+    },{$addToSet: {patientList: req.body.patientID}}).exec((err, doc) => {
+        if (err) throw err;
+        if (!doc) res.status(404).json({message: "Document not found"})
+        res.status(200).json({
+            message: "Updated successfully"
+        });
+    })   
+}
 const saveDoctor = async function (req,res) {
     const doctorID = generateID({initial: 'D', registration: req.body.registration});
     const doctor = new Doctor({
@@ -71,11 +106,29 @@ const saveDoctor = async function (req,res) {
         }
         
     })
-    
 }
+
+const getRequestList = async (req,res) => {
+    Request.find({
+        to: req.params.id
+    }).exec((err,doc) => {
+        if (err) throw err;
+        if (!doc) {
+            res.status(404).json({message: "No request made"})
+            return;
+        }
+        res.status(200).json(doc)
+        return;
+    })
+} 
+
+
 
 module.exports = {
     validateEmail,
     validateRegistration,
+    getPatientList,
+    updatePatientList,
+    getRequestList,
     saveDoctor
 };

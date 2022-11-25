@@ -1,5 +1,7 @@
-const DoctorRegister  = require('./routes/DoctorRegister');
+const DoctorController  = require('./routes/Doctor');
 const AppointmentController = require('./routes/Appointment');
+const PatientController = require('./routes/Patient');
+const RequestController = require('./routes/Request');
 const Login = require('./routes/Login');
 const express = require('express');
 const dotenv = require('dotenv');
@@ -7,19 +9,29 @@ const db = require('./config/db');
 const cors = require('cors');
 const app = express();
 const data = require('./data/index');
+const { patient } = require('./config/db');
 
 dotenv.config();
 
+// server port
 const PORT = process.env.PORT;
 
+// cross origin
 const corsOptions = {
     origin: "http://localhost:3000"
 }
 
+// get models for database insertion
 const Doctor = db.doctor;
 const Patient = db.patient;
 const Appointment = db.appoinment;
 const RegistrationRequest = db.registrationRequest;
+
+// base url for doctor 
+const doctorBaseURL = '/doctor/:id';
+
+// base url for patient
+const patientBaseURL = '/patient/:id';
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -33,7 +45,7 @@ app.get("/doctors", async (req, res) => {
     }
   });
 
-app.post('/register/doctor',[DoctorRegister.validateEmail, DoctorRegister.validateRegistration],DoctorRegister.saveDoctor)
+app.post('/register/doctor',[DoctorController.validateEmail, DoctorController.validateRegistration],DoctorController.saveDoctor)
 
 // login from modal
 app.post('/login',Login.verifyUser,Login.saveUser);
@@ -43,20 +55,42 @@ app.post('/auth',Login.verifyToken)
 
 // appointment management API
 // add appointment
-app.post('/doctor/:id/appointments',Login.verifyToken,AppointmentController.addAppointment);
+app.post(doctorBaseURL + '/appointments',Login.verifyToken,AppointmentController.addAppointment);
 
 // update appointment
-app.put('/doctor/:id/appointment/:appointmentID', Login.verifyToken, AppointmentController.updateAppointment);
+app.put(doctorBaseURL + '/appointment/:appointmentID', Login.verifyToken, AppointmentController.updateAppointment);
 
 // delete appointment
-app.delete('/doctor/:id/appointment/:appointmentID',Login.verifyToken, AppointmentController.deleteAppointment);
+app.delete(doctorBaseURL + '/appointment/:appointmentID',Login.verifyToken, AppointmentController.deleteAppointment);
 
-// get appointment by id
-app.get('/doctor/:id/appointments', AppointmentController.getAppointmentsByDoctor);
+// get appointment by doctor id
+app.get(doctorBaseURL + '/appointments', AppointmentController.getAppointmentsByDoctor);
 
-// app.get('/', function(req, res) {
-//     res.send('hello');
-// });
+// get appointment by patient id
+app.get(patientBaseURL + '/appointments',AppointmentController.getAppointmentsByPatient);
+
+// cancel appointment by patient id
+app.put(patientBaseURL + '/appointment/:id' + '/cancel',Login.verifyToken,AppointmentController.cancelAppointment);
+
+// get patient list by doctor id
+app.get(doctorBaseURL + '/patients', DoctorController.getPatientList);
+
+// update patient list
+app.put(doctorBaseURL + '/patients', DoctorController.updatePatientList);
+
+// get request list by doctor id
+app.get(doctorBaseURL + '/requests',DoctorController.getRequestList);
+
+// delete request
+app.delete('/request/:requestID',RequestController.deleteRequest);
+
+// get patient info
+app.get(patientBaseURL, PatientController.getPatientInfo);
+
+// update patient info
+app.put(patientBaseURL, Login.verifyToken, PatientController.updatePatientInfo)
+
+
 
 
 
@@ -66,7 +100,7 @@ db.mongoose.connect(db.connection, { useNewUrlParser: true, useUnifiedTopology: 
   console.log('Database is connected')   
   // populate database
   Doctor.count().then((count) => {
-    if (count === 0) {
+    if (count === 0){
       Doctor.insertMany(data.DoctorData).then(() => console.log('Doctors added')).catch(err => console.log(err));
     }
   })

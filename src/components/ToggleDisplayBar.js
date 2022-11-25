@@ -1,5 +1,7 @@
-import { Container, Button } from 'react-bootstrap';
+
+import { Container, Button} from 'react-bootstrap';
 import * as Colors from '../constants/colors';
+
 
 export default function ToggleDisplay({title, setVisible, state}){
     return (

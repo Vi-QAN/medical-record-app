@@ -20,13 +20,6 @@ import * as Colors from '../constants/colors';
 
 // id generator
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
-
-const config = {
-  headers: {
-    'Content-Type': 'application/json'
-  }
-}
 
 // appointment states
 const STATES = {
@@ -127,9 +120,6 @@ const reducer = (state, action) => {
 }
 
 async function onAddAppointment({id, newItem}) {
-  // await axios.post(url + "/doctor/" + id + "/appointments",newItem,config)
-  //       .then(res => {console.log(res);})
-  //       .catch(err => console.log(err));
   await fetch(url + "/doctor/" + id + "/appointments", {
     method: "POST",
     headers: {
@@ -145,26 +135,19 @@ async function onAddAppointment({id, newItem}) {
 }
 
 async function onUpdateAppointment({id, appointmentID, changed}){
-  await axios.put(url + "/doctor/" + id + "/appointment/" + appointmentID,Object.assign({}, {token: localStorage.getItem('token')},changed[appointmentID]),config)
-        .then(res => {console.log(res);})
-        .catch(err => console.log(err));
   // do update 
-  // await fetch(url + "/doctor/" + id + "/appointment/" + appointmentID, {
-  //   method: "PUT",
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify(Object.assign({}, {token: localStorage.getItem('token')},changed[appointmentID]))
-  // }).then(res => res.json())
-  // .then(result => console.log(result))
-  // .catch(err => console.log(err));
+  await fetch(url + "/doctor/" + id + "/appointment/" + appointmentID, {
+    method: "PUT",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(Object.assign({}, {token: localStorage.getItem('token')},changed[appointmentID]))
+  }).then(res => res.json())
+  .then(result => console.log(result))
+  .catch(err => console.log(err));
 }
 
-async function onDeleteAppointment({id, deleted}){
-  // await axios.delete(url + "/doctor/" + id + "/appointment/" + deleted,{token: localStorage.getItem('token')},config)
-  //       .then(res => {console.log(res);})
-  //       .catch(err => console.log(err));
-  // do a delete 
+async function onDeleteAppointment({id, deleted}){ 
   await fetch(url + "/doctor/" + id + "/appointment/" + deleted, {
     method: "DELETE",
     headers: {
