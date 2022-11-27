@@ -17,7 +17,7 @@ db.doctor = require("../models/Doctor");
 db.patient = require("../models/Patient");
 db.registrationRequest = require("../models/RegistrationRequest");
 db.user = require("../models/User");
-// db.role = require("./models/Role");
+db.image = require("../models/Image");
 
 db.ROLES = {
     doctor: "doctor",

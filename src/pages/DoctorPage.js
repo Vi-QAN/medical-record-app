@@ -3,7 +3,7 @@ import url from '../constants/link';
 import { useNavigate } from 'react-router-dom';
 import { Container, Card, Form, CloseButton, Button } from 'react-bootstrap';
 import DoctorScheduler from '../components/DoctorScheduler';
-import profileImg from '../assets/profile.jpg';
+import profileImg from '../assets/profile.png';
 import Header from '../components/Header';
 import ToggleDisplay from '../components/ToggleDisplayBar';
 import * as Colors from '../constants/colors';

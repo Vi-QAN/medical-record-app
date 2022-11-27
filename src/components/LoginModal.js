@@ -37,9 +37,10 @@ export default function LoginModal({setModal, setShowModal}){
           if (result?.token){
             // save token into local storage
             localStorage.setItem('token', result.token);
+            localStorage.setItem('userID', values.id.toUpperCase())
             console.log(localStorage.getItem('token'));
             setShowModal(false);
-            navigate("/" + result.role);
+            navigate("/" + result.role + '/' + values.id.toUpperCase());
 
           }
         }).catch(error => console.log(error))

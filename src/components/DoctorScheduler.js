@@ -17,6 +17,7 @@ import {
   ConfirmationDialog
 } from '@devexpress/dx-react-scheduler-material-ui';
 import * as Colors from '../constants/colors';
+import Alert from 'react-bootstrap/Alert'
 
 // id generator
 import { v4 as uuidv4 } from 'uuid';
@@ -163,6 +164,10 @@ async function onDeleteAppointment({id, deleted}){
 
 export default function DoctorScheduler({id}) {
   const [state, dispatch] = React.useReducer(reducer, initialState);
+
+  const [successMsg, setSuccessMsg] = React.useState(null);
+
+  const [errorMsg, setErrorMsg] = React.useState(null);
   
   const {
     data, loading, currentViewName, currentDate, resources
@@ -184,16 +189,17 @@ export default function DoctorScheduler({id}) {
   const commitChanges = ({ added, changed, deleted }) => {
     let data = state.data;
     if (added) {
-      setLoading(true);
+      // setLoading(true);
       const newItem = Object.assign({},{_id: uuidv4()}, added);
       data = [...data, newItem];
       onAddAppointment({id: id, newItem: newItem});
       setData(data);      
       // set loading state
-      setLoading(false);
+      // setLoading(false);
+      setSuccessMsg('Appointment added');
     }
     if (changed) {
-      setLoading(true);
+      // setLoading(true);
       let appointmentID = '';
       data = data.map(appointment => {
         if (changed[appointment.id]){
@@ -207,15 +213,16 @@ export default function DoctorScheduler({id}) {
       console.log(appointmentID);
       onUpdateAppointment({id: id, appointmentID: appointmentID, changed: changed});
       setData(data);
-      setLoading(false);
+      // setLoading(false);
+      setSuccessMsg('Appointment updated');
     }
     if (deleted !== undefined) {
-      setLoading(true);
+      // setLoading(true);
       data = data.filter(appointment => appointment.id !== deleted);
       onDeleteAppointment({id: id, deleted: deleted});
       setData(data);
-      setLoading(false);
-
+      // setLoading(false);
+      setSuccessMsg('Appointment deleted')
     }
   };
 
@@ -239,11 +246,13 @@ export default function DoctorScheduler({id}) {
     })
     .catch(err => console.log(err))
     .finally(setLoading(false));
-    console.log("Effect");
   },[currentViewName, currentDate])
 
   return (
   <React.Fragment>
+    {successMsg && <Alert variant={'success'}>
+      {successMsg}
+    </Alert>}
     <Paper>
       <Scheduler
           data={data}

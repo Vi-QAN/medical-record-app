@@ -9,8 +9,11 @@ const db = require('./config/db');
 const cors = require('cors');
 const app = express();
 const data = require('./data/index');
-const { patient } = require('./config/db');
+const bodyParser = require('body-parser')
 
+// image upload setup
+var fs = require('fs');
+var path = require('path');
 dotenv.config();
 
 // server port
@@ -26,6 +29,7 @@ const Doctor = db.doctor;
 const Patient = db.patient;
 const Appointment = db.appoinment;
 const RegistrationRequest = db.registrationRequest;
+const Image = db.image;
 
 // base url for doctor 
 const doctorBaseURL = '/doctor/:id';
@@ -34,7 +38,51 @@ const doctorBaseURL = '/doctor/:id';
 const patientBaseURL = '/patient/:id';
 
 app.use(cors(corsOptions));
-app.use(express.json());
+
+///////////////////////////////////
+//image upload setup 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+// Set EJS as templating engine 
+app.set("view engine", "ejs");
+var multer = require('multer');
+// storage
+const storage = multer.diskStorage({
+  destination: function (req, res, cb) {
+      cb(null, 'uploads/')
+  }
+});
+var upload = multer({ storage: storage });
+
+app.post(patientBaseURL + '/image', upload.single('image'), (req, res, next) => {
+  console.log(req.body);
+  const update = {
+    image: {
+      data: fs.readFileSync(req.file.path),
+      contentType: 'image/png', 
+    }
+  }
+
+  Image.updateOne({_id: req.params.id}, update, {upsert: true, setDefaultsOnInsert: true}, function(err){
+    if (err) throw err;
+  });
+  // var new_img = new Image;
+  // new_img._id = req.params.id;
+  // new_img.image.data = fs.readFileSync(req.file.path)
+  // new_img.image.contentType = 'image/png';  // or 'image/png'
+  // new_img.save();
+  res.json({ message: 'New image added to the db!' });
+});
+app.get(patientBaseURL + '/image', (req, res) => {
+  Image.findOne({_id: req.params.id}, 'image createdAt', function(err, img) {
+    if (err)
+        res.send(err);
+    res.contentType('json');
+    res.send(img);
+}).sort({ createdAt: 'desc' });
+});
+
+/////////////////////////////////////////
 
 app.get("/doctors", async (req, res) => {
     const doctors = await Doctor.find({});
@@ -69,8 +117,12 @@ app.get(doctorBaseURL + '/appointments', AppointmentController.getAppointmentsBy
 // get appointment by patient id
 app.get(patientBaseURL + '/appointments',AppointmentController.getAppointmentsByPatient);
 
+// get available appointments
+app.get(patientBaseURL + '/appointments/available',AppointmentController.getAvailableAppointments);
+
 // cancel appointment by patient id
 app.put(patientBaseURL + '/appointment/:id' + '/cancel',Login.verifyToken,AppointmentController.cancelAppointment);
+app.put(patientBaseURL + '/appointment/:id' + '/book',Login.verifyToken,AppointmentController.bookAppointment);
 
 // get patient list by doctor id
 app.get(doctorBaseURL + '/patients', DoctorController.getPatientList);
@@ -89,6 +141,8 @@ app.get(patientBaseURL, PatientController.getPatientInfo);
 
 // update patient info
 app.put(patientBaseURL, Login.verifyToken, PatientController.updatePatientInfo)
+
+
 
 
 

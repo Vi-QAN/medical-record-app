@@ -2,11 +2,12 @@ import React from 'react';
 import url from '../constants/link';
 import { useNavigate } from 'react-router-dom';
 import { Container, Card, Form, CloseButton, Button } from 'react-bootstrap';
-import profileImg from '../assets/profile.jpg';
 import Header from '../components/Header';
 import ToggleDisplay from '../components/ToggleDisplayBar';
 import * as Colors from '../constants/colors';
 import { Formik } from 'formik';
+import Alert from 'react-bootstrap/Alert'
+import Spinner from 'react-bootstrap/Spinner';
 
 // displays patient profile
 function PatientProfile({id}){
@@ -14,13 +15,36 @@ function PatientProfile({id}){
     const [ message, setMessage] = React.useState(null);
     const [ editing, setEditing] = React.useState(false);
     const [ updating, setUpdating] = React.useState(false);
+    const [ loading, setLoading] = React.useState(false);
 
-    const [imageURL, setImageURL] = React.useState(null)
+    // store url
+    const [imageURL, setImageURL] = React.useState(null);
+
+    // 
+    const [image,setImage] = React.useState(null);
 
     // read only fields
     const readOnly = ['id','name','dob'];
 
+    // convert buffer to binary
+    const arrayBufferToBase64 = function(buffer) {
+        var binary = '';
+        var bytes = [].slice.call(new Uint8Array(buffer));
+        bytes.forEach((b) => binary += String.fromCharCode(b));
+        return window.btoa(binary);
+    };
+
     React.useEffect(() => {
+        setLoading(true);
+        fetch(url + '/patient/' + id + '/image')
+        .then((res) => res.json())
+        .then((data) => {
+            console.log(data)
+            var base64Flag = 'data:image/png;base64,';
+            var imageStr = arrayBufferToBase64(data.image.data.data);
+            setImage(base64Flag + imageStr)
+            setLoading(false);
+        })
         fetch(url + '/patient/' + id)
         .then(res => res.json())
         .then(result => {
@@ -31,24 +55,27 @@ function PatientProfile({id}){
             setProfile(info)});
     },[])
 
-    const onUploadImage = (e) => {
-        setImageURL(
-            URL.createObjectURL(e.target.files[0])
-        );
+    const onUploadImage = () => {
+        if (!imageURL) return;
+        setImage(URL.createObjectURL(imageURL));
+        const formData = new FormData()
+        formData.append('image', imageURL);
+        formData.append('_id',id);
+        fetch(url + '/patient/' + id + '/image', {
+            method: 'POST',
+            body: formData,
+        }).then(res => res.json()).then(result => console.log(result));
     }
 
     const onUpdate = (values) => {
         setUpdating(true);
-
         const update = {
             token: localStorage.getItem('token'),
             email: values.email,
             password: values.password,
             gender: values.gender[0].toUpperCase() + values.gender.substring(1),
             address: values.address,
-            image: imageURL,
         }
-        // console.log(update)
         fetch(url + '/patient/' + id,{
             method: 'PUT',
             headers: {
@@ -62,14 +89,18 @@ function PatientProfile({id}){
 
     return (
         <Container>
-
-            {profile && 
-            <Card className="d-flex flex-column p-3 mb-3" style={{backgroundColor: Colors.white, width: '100%' }}>
+            {message && <Alert variant={'success'}>
+                {message}
+            </Alert>}
+            {loading && <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>}
+            {profile && !loading && <Card className="d-flex flex-column p-3 mb-3" style={{backgroundColor: Colors.white, width: '100%' }}>
                 <Card.Body className="d-flex flex-lg-row flex-column align-items-lg-start align-items-center" style={{width: '100%'}}>
-                    <Card.Img className="d-none d-md-flex mb-3" style={{width:'17%', height: '15%', marginRight: '1rem'}} src={profile.image}/>
+                    <Card.Img className="d-none d-md-flex mb-3" style={{width:'17%', height: '15%', marginRight: '1rem'}} src={image}/>
                     <Formik
                         // validationSchema={}
-                        onSubmit={(values) => onUpdate(values)}
+                        onSubmit={(values) => {onUpdate(values); onUploadImage()}}
                         initialValues={profile}
                     >
                         {({
@@ -109,7 +140,7 @@ function PatientProfile({id}){
                                         placeholder='Upload Image'
                                         name='imageFile'
                                         value={values.imageFile}
-                                        onChange={onUploadImage}
+                                        onChange={(e) => setImageURL(e.target.files[0])}
                                         disabled={!editing}
                                     />
                                     
@@ -150,22 +181,101 @@ function PatientProfile({id}){
     )
 }
 // this function is used to make appintment with doctor
-function MakeAppointment(){
+function MakeAppointment({id}){
+    const [appointments, setAppointments] = React.useState(null);
+    const [ filteredAppointments, setFilteredAppointments] = React.useState(null)
+    const [doctors, setDoctors] = React.useState(null);
     const [searching, setSearching] = React.useState(false);
-    const aptList = [{
-        date: new Date(),
-        SelectTime: "",
+    const [loading, setLoading] = React.useState(false);
+    const [message, setMessage] = React.useState(null);
+
+    const onSearch = ({doctor, date}) => {
+        let filtered = [...appointments];
         
-    }]
-    
+        if (doctor && date){
+            filtered = filtered.filter(a => (a.createdBy === doctor) && (new Date(a.startDate).toLocaleDateString() === new Date(date).toLocaleDateString()) )
+        }
+        else if (doctor){
+            filtered = filtered.filter(a => a.createdBy === doctor)
+        }
+        else if (date){
+            filtered = filtered.filter(a => new Date(a.startDate).toLocaleDateString() === new Date(date).toLocaleDateString());
+        }
+        console.log(filtered);
+        setFilteredAppointments(filtered);
+    }
+     
+    React.useEffect(() => {
+        setLoading(true);
+        fetch(url + '/patient/' + id + '/appointments/available')
+        .then(res => res.json()).then(result => {
+            const filtered = result.appointments.filter((item) => (new Date(item.startDate) - new Date()) >= 0)
+            setFilteredAppointments(filtered);
+            setAppointments(filtered)})
+        fetch(url + '/doctors').then(res => res.json()).then(result => {
+            console.log(result);
+            setDoctors(result)})
+        setLoading(false);
+    },[])
+
+    const onBook = ({aptID}) => {
+        fetch(url + '/patient/' + id + '/appointment/' + aptID + '/book',{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: localStorage.getItem('token'),
+                patientID: id,
+                state: 'Booked',
+            })
+        }).then(res => res.json()).then(setMessage('Book Appointment Successfully'));
+        setFilteredAppointments(appointments => appointments.filter(a => a._id !== aptID));
+    }
+
+    const onSort = (e) => {
+        const value = e.target.value;
+        if (value === '') return;
+        if (value === 'Doctor'){
+            const sorted = [...appointments].sort((a,b) => {
+                let fa = a.createdBy,
+                    fb = b.createdBy;
+                if (fa < fb) {
+                    return -1;
+                }
+                if (fa > fb) {
+                    return 1;
+                }
+                return 0;
+            })
+            setFilteredAppointments(sorted)
+        }
+        else if (value === 'Date'){
+            const sorted = [...appointments].sort((a,b) => {
+                let da = new Date(a.startDate),
+                    db = new Date(b.startDate);
+                
+                return da - db;
+            })
+            setFilteredAppointments(sorted);
+
+        }
+        
+    }
     return (
         <Container className="d-flex flex-column align-items-center">
-            <Formik
+            {message && <Alert variant={'success'}>
+                {message}
+            </Alert>}
+            {loading && <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>}
+            {appointments && <Formik
             
-            onSubmit={(values) => console.log(values)}
+            onSubmit={(values) => onSearch(values)}
             initialValues={{
                 doctor: '',
-                date: new Date().toLocaleDateString(),
+                date: '',
             }}
         >
             {({
@@ -182,11 +292,11 @@ function MakeAppointment(){
                             onChange={handleChange}
                             disabled={searching}>
                                 <option>{'Select doctor'}</option>
-                            {/* {practiceOptions.map((option) => {
+                            {doctors && doctors.map((option) => {
                                 return (
-                                    <option>{option}</option>
+                                    <option>{option._id}</option>
                                 )
-                            })} */}
+                            })}
                         </Form.Select>
 
                     </Form.Group>
@@ -205,42 +315,62 @@ function MakeAppointment(){
                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                         </svg>  
                     </Button>
+                    
     
                     </Form>
                 )}
-            </Formik>
-            {aptList.map((request) => {
+            </Formik>}
+            {<Form className='form w-75 d-flex flex-row mb-5'>
+                <Form.Group className="col-6" controlId="validationFormik11">
+                        <Form.Label>Sort by</Form.Label>
+                        <Form.Select
+                            itemType='text'
+                            name='doctor'
+                            onChange={(values) => onSort(values)}
+                            disabled={searching}>
+                                <option>{''}</option>
+                                {['Doctor','Date'].map((option) => {
+                                    return (
+                                        <option>{option}</option>
+                                    )
+                                })}
+                        </Form.Select>
+
+                    </Form.Group>
+            </Form> }
+            {appointments && <Container> {filteredAppointments.map((appointment) => {
                 return (
                     <Card className="d-flex w-100 flex-row p-3 mb-3" style={{backgroundColor: Colors.white }}>
                         
                         <Card.Body className="d-flex flex-column w-auto align-items-start">
-                          
-                            <Card.Text style={{fontSize: '16px'}} className="mb-2">time: {request.time}</Card.Text>
-                            <Card.Text style={{fontSize: '16px'}} className="mb-1">Date: {request.date.toLocaleDateString()}</Card.Text>
+                            <Card.Text style={{fontSize: '16px'}} className="mb-2">Doctor: {appointment.createdBy}</Card.Text>
+                            <Card.Text style={{fontSize: '16px'}} className="mb-2">Title: {appointment.title}</Card.Text>
+                            <Card.Text style={{fontSize: '16px'}} className="mb-2">Date: {new Date(appointment.startDate).toLocaleDateString()}</Card.Text>
+                            <Card.Text style={{fontSize: '16px'}} className="mb-2">From: {new Date(appointment.startDate).toLocaleTimeString()}</Card.Text>
+                            <Card.Text style={{fontSize: '16px'}} className="mb-1">To: {new Date(appointment.endDate).toLocaleTimeString()}</Card.Text>
                         </Card.Body>
                         <Container className="w-auto d-flex justify-content-lg-end justify-content-start flex-lg-row flex-column">
-                            <Button style={{backgroundColor: Colors.lightGreen, border: 'none', height: '2.5rem', width: '8rem'}} >
+                            <Button style={{backgroundColor: Colors.lightBlue, border: 'none', height: '2.5rem', width: '8rem'}} onClick={() => onBook({aptID: appointment._id})}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-circle" viewBox="0 0 20 20">
                                     <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z"/>
                                     <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z"/>
                                 </svg>
-                                Confirm
+                                Book
                             </Button>
                            
                            
                            
                         </Container>
                         
-                    </Card>
-                    
-                )
-            })}
+                    </Card>)})}
+                </Container>}
         </Container>
 
     )
 }
 function ViewAppointment({id}){
     const [ appointments, setAppointments] = React.useState(null);
+    const [ filteredAppointments, setFilteredAppointments] = React.useState(null)
     const [ searching, setSearching] = React.useState(false);
 
     const [ message, setMessage ] = React.useState(null);
@@ -249,8 +379,9 @@ function ViewAppointment({id}){
         fetch(url + '/patient/' + id + '/appointments')
         .then(res => res.json())
         .then(result => {
-            const filtered = result.appointments.filter((item) => (new Date(item.startDate) - new Date()) > 0)
+            const filtered = result.appointments.filter((item) => (new Date(item.startDate) - new Date()) >= 0)
             setAppointments(filtered);
+            setFilteredAppointments(filtered);
         })
     },[]);
 
@@ -267,7 +398,7 @@ function ViewAppointment({id}){
             filtered = filtered.filter(a => new Date(a.startDate).toLocaleDateString() === new Date(date).toLocaleDateString());
         }
         console.log(filtered);
-        setAppointments(filtered);
+        setFilteredAppointments(filtered);
     }
     const onCancel = ({aptID}) => {
         fetch(url + '/patient/' + id + '/appointment/' + aptID + '/cancel',{
@@ -281,10 +412,13 @@ function ViewAppointment({id}){
                 state: 'Available',
             })
         }).then(res => res.json()).then(setMessage('Cancel Successfully'));
-        setAppointments(appointments => appointments.filter(a => a._id !== aptID));
+        setFilteredAppointments(appointments => appointments.filter(a => a._id !== aptID));
     }
     return (
         <Container className="d-flex flex-column align-items-center">
+            {message && <Alert variant={'success'}>
+                {message}
+            </Alert>}
             {appointments && <Formik
             
                 onSubmit={(values) => onSearch(values)}
@@ -342,7 +476,7 @@ function ViewAppointment({id}){
                 </Card>}
                 
             {appointments && 
-                <Container style={{overflowY: 'auto'}}> {appointments.map((appointment) => {
+                <Container style={{overflowY: 'auto'}}> {filteredAppointments.map((appointment) => {
                         return (
                             <Card className="d-flex w-100 flex-row p-3 mb-3" style={{overflowY: 'auto', backgroundColor: Colors.white }}>    
                             <Card.Body className="d-flex flex-column w-auto align-items-start">
@@ -352,7 +486,7 @@ function ViewAppointment({id}){
                                 <Card.Text style={{fontSize: '16px'}} className="mb-1">To: {new Date(appointment.endDate).toLocaleTimeString()}</Card.Text>
                             </Card.Body>
                             <Container className="w-auto d-flex justify-content-lg-end justify-content-start flex-lg-row flex-column">
-                                <Button style={{backgroundColor: Colors.lightGreen, border: 'none', height: '2.5rem', width: '8rem'}} onClick={() => onCancel({aptID: appointment._id})}>
+                                <Button style={{backgroundColor: Colors.white, color: Colors.lighterBlue, border: `1px solid ${Colors.lighterBlue}`, height: '2.5rem', width: '8rem'}} onClick={() => onCancel({aptID: appointment._id})}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-circle" viewBox="0 0 20 20">
                                         <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z"/>
                                         <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z"/>
@@ -365,13 +499,6 @@ function ViewAppointment({id}){
                         )}   
                     </Container>
                 }
-            
-            
-            
-            
-           
-           
-    
         </Container>
         
     )}
@@ -402,6 +529,7 @@ export default function PatientPage() {
             })
         }).then(res => res.json())
         .then(result => {
+            console.log(result);
             if (result.login){
                 setID(result.id);
             }

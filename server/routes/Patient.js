@@ -13,14 +13,12 @@ const getPatientInfo = async (req,res) => {
 }
 
 const updatePatientInfo = async (req,res) => {
-    console.log(req.body);
     Patient.updateOne({
         _id: req.params.id,
     },{ email: req.body.email,
         password: req.body.password,
         gender: req.body.gender,
-        address: req.body.address,
-        image: req.body.image}).exec((err, doc) => {
+        address: req.body.address}).exec((err, doc) => {
         if (err){
             res.status(400);
             
@@ -32,7 +30,23 @@ const updatePatientInfo = async (req,res) => {
     })
 }
 
+const updatePatientImage = async (req, res) => {
+    console.log(req.body.image);
+    Patient.updateOne({
+        _id: req.params.id
+    },{image: req.body.image}).exec((err, doc) => {
+        if (err){
+            res.status(400);
+            
+        }
+        else {
+            res.status(200);
+        }
+        return;
+    })
+}
 module.exports = {
     getPatientInfo,
     updatePatientInfo,
+    updatePatientImage,
 }

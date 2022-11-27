@@ -48,7 +48,7 @@ const verifyUser = async (req, res, next) => {
     const initChar = req.body.id[0];
     if (initChar === 'D'){
         Doctor.findOne({
-            id: req.body.id,
+            _id: req.body.id,
         }, function(err, user){
             if (err){
                 throw err;
@@ -71,7 +71,7 @@ const verifyUser = async (req, res, next) => {
     }
     else {
         Patient.findOne({
-            id: req.body.id
+            _id: req.body.id
         }, function(err, user){
             if (err || !user) {
                 res.status(404).send({
