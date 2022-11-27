@@ -1,6 +1,33 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+
+
+# Running Project
+
+This project will need a mongodb instance running at first
+
+Connection String: `mongodb://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DB}?authSource=admin`;
+
+Go to ./server/config/db.js 
+Modify USERNAME, PASSWORD, HOST, PORT regarding to your mongodb instance
+
+## Running Server
+
+To run up express server: navigate to root folder 
+Run command: npm run dev 
+
+Express server will be run on port 5000 then connected to database
+data for database will be populate automatically 
+
+## Running React App
+To run up react app: navigate to root folder
+Run command: npm run start
+
+You can now login for doctor using id D1 password 12345
+
+Or patient using id P1 password 12345
+
+
 
 ## Available Scripts
 
