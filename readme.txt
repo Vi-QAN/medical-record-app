@@ -45,6 +45,8 @@ src: React application
 
 This project will need a mongodb instance running at first
 
+create database name MedicalDatabase
+
 Connection String: `mongodb://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DB}?authSource=admin`;
 
 Go to ./server/config/db.js 

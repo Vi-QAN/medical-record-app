@@ -95,25 +95,20 @@ const verifyUser = async (req, res, next) => {
 
 const saveUser = async (req,res) => {
     const accessToken = generateAccessToken({id: req.body.id});
-    User.findOne({id: req.body.id}, function(err, user) {
+    User.findOne({_id: req.body.id}, function(err, user) {
         if (err){
             throw err;
         }
         if (!user){
             // create new if not found in user table
             new User({
-                id: req.body.id,
+                _id: req.body.id,
                 token: accessToken
-            }).save(err => {
-                if (err){
-                    res.status(500).send({message: "Error loging in"});
-                    return;
-                }
-            })
+            }).save()
         }
         else {
             // update if already in User table
-            User.updateOne({id: req.body.id}, {token: accessToken}, function(err,user) {
+            User.updateOne({_id: req.body.id}, {token: accessToken}, function(err,user) {
                 if (err) return err;
             });
         }

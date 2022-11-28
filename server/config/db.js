@@ -11,7 +11,8 @@ const db = {};
 
 db.mongoose = mongoose;
 // add ?authSource=admin to resolve authentication error
-db.connection = `mongodb://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DB}?authSource=admin`;
+// db.connection = `mongodb://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${DB}?authSource=admin`;
+db.connection = `mongodb://${HOST}:${PORT}/${DB}?authSource=admin`;
 db.appoinment = require("../models/Appointment");
 db.doctor = require("../models/Doctor");
 db.patient = require("../models/Patient");
