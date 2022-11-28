@@ -43,7 +43,7 @@ function PatientProfile({id}){
             var base64Flag = 'data:image/png;base64,';
             var imageStr = arrayBufferToBase64(data.image.data.data);
             setImage(base64Flag + imageStr)
-            setLoading(false);
+            
         })
         fetch(url + '/patient/' + id)
         .then(res => res.json())
@@ -53,6 +53,7 @@ function PatientProfile({id}){
                 dob: new Date(result.DOB).toLocaleDateString('en-GB',{timeZone: 'UTC'})};
             console.log(info);
             setProfile(info)});
+        setLoading(false);
     },[])
 
     const onUploadImage = () => {
